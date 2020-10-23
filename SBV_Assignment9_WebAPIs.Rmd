@@ -35,7 +35,10 @@ library(jsonlite)
 library(knitr)
 ```
 
-# Construct string
+# NY Times books API
+I decided to use the NY Times books API, which gives the user data on book rankings by category or what they call list, for a given week. It's the data that comprises makes up their [Best Seller List](https://www.nytimes.com/books/best-sellers/).
+
+## Construct URL
 First we want to construct the URL so we pull the data we want with the parameters we want. 
 ```{r}
 url_string = "https://api.nytimes.com/svc/books/v3/lists/{date}/{list}.json?api-key={api_key}"
@@ -59,14 +62,14 @@ list3 <- tail(list_names$list_name_encoded,19)
 kable(list(list(list1,list2),list3))
 ```
 
-# Reading data from API
+## Reading data from API
 When we first read the `raw.data`, we get some information about the link as well as the link *results*. From the *results* list we can grab the *books* data frame.
 ```{r}
 raw.data <- fromJSON(rawToChar(GET(glue(url_string))$content))
 book.data <- raw.data$results$books
 ```
 
-# Creating an R DataFrame
+## Creating an R DataFrame
 Finally we can simplify the book data frame that the API gives us to a data frame with the information we want in it.
 ```{r}
 book.rank.df <-
