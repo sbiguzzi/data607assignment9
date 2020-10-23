@@ -15,7 +15,7 @@ editor_options:
 params:
   key:
     label: "Please Enter NYTimes Book API Key"
-    value: "5AOk4HOe2eMJmO23EvrSplQGGl7WVLtG"
+    value: ""
     input: password
 ---
 
