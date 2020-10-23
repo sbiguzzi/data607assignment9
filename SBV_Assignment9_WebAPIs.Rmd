@@ -1,0 +1,86 @@
+---
+title: "Week 9 Assignment - Web APIs"
+author: "Stefano Biguzzi"
+date: "10/19/2020"
+output:
+  html_document:
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+    code_folding: show
+  pdf_document: default
+editor_options: 
+  chunk_output_type: console
+params:
+  key:
+    label: "Please Enter NYTimes Book API Key"
+    value: "5AOk4HOe2eMJmO23EvrSplQGGl7WVLtG"
+    input: password
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# <span style="color: #969696;">Introduction
+
+<span style="color: #969696;">Your task is to choose one of the New York Times APIs, construct an interface in R to read in the JSON data, and transform it into an R DataFrame.</span>
+
+# Loading Libraries
+The following libraries are required for running this code
+```{r, message=F,warning=F}
+library(glue)
+library(httr)
+library(jsonlite)
+library(knitr)
+```
+
+# Construct string
+First we want to construct the URL so we pull the data we want with the parameters we want. 
+```{r}
+url_string = "https://api.nytimes.com/svc/books/v3/lists/{date}/{list}.json?api-key={api_key}"
+```
+The parameters include `date`, `list`, and `api_key`. For the purposes of this assignment I used the last day before the COVID-19 lockdown in New York, the list of books was *hardcover-nonfiction* and my api-key.
+```{r}
+api_key <- params$key
+list <- "hardcover-nonfiction"
+date <- "2020-03-14"
+```
+For the `list` parameter you could choose from the following options:  
+```{r, echo=F,results='asis',comment=NA}
+names <- fromJSON(rawToChar(GET("https://api.nytimes.com/svc/books/v3/lists/names.json?api-key=5AOk4HOe2eMJmO23EvrSplQGGl7WVLtG")$content))
+
+list_names <- names$results
+
+list1 <- head(list_names$list_name_encoded,20)
+list2 <- list_names[21:40,"list_name_encoded"]
+list3 <- tail(list_names$list_name_encoded,19)
+
+kable(list(list(list1,list2),list3))
+```
+
+# Reading data from API
+When we first read the `raw.data`, we get some information about the link as well as the link *results*. From the *results* list we can grab the *books* data frame.
+```{r}
+raw.data <- fromJSON(rawToChar(GET(glue(url_string))$content))
+book.data <- raw.data$results$books
+```
+
+# Creating an R DataFrame
+Finally we can simplify the book data frame that the API gives us to a data frame with the information we want in it.
+```{r}
+book.rank.df <-
+  book.data[,c("rank",
+               "rank_last_week",
+               "weeks_on_list",
+               "title",
+               "author",
+               "description",
+               "primary_isbn13")]
+```
+The final result
+```{r, echo=F, results='asis'}
+kable(head(book.rank.df,5),caption = "Top 5 NYTimes Ranked Hardcover Nonfiction Books for the week of 2020-03-09")
+```
+
+
